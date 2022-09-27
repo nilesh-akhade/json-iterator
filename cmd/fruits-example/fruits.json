@@ -1,0 +1,215 @@
+{
+    "location": "mars",
+    "trees": [
+        {
+            "id": "myTree",
+            "branches": [
+                "branch1",
+                "branch2"
+            ],
+            "root": {
+                "size": "huge"
+            },
+            "fruits": [
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "blue",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "green",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "yellow",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "orange",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "banana",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "beige",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                },
+                {
+                    "name": "apple",
+                    "color": "red",
+                    "taste": "sweet",
+                    "weight": 23
+                }
+            ]
+        }
+    ]
+}
