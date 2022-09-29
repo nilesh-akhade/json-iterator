@@ -71,7 +71,6 @@ func (i *iterator) Next() interface{} {
 			if err != nil {
 				i.file.Close()
 				i.err = err
-				return nil
 			}
 		}
 		return firstElem
@@ -82,7 +81,6 @@ func (i *iterator) Next() interface{} {
 		if err != nil {
 			i.file.Close()
 			i.err = err
-			return nil
 		}
 	} else {
 		i.file.Close()
@@ -107,7 +105,8 @@ func (i *iterator) RegisterTypeDecoder(jsonPath string, decoder TypeDecoder) {
 }
 
 func (i *iterator) next() (interface{}, error) {
-	var jt jsonToken
+	var ok bool
+	var tokenFromStack jsonToken
 	jsonPath := i.stack.String()
 	if d, found := i.typeDecoders[jsonPath]; found {
 		if i.decoder.More() {
@@ -126,59 +125,74 @@ func (i *iterator) next() (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		if jd, ok := t.(json.Delim); ok {
-			strJD := jd.String()
-			switch strJD {
-			case "{":
-				i.stack.Push(NewJsonToken(jd))
-			case "}":
-				jt, _ = i.stack.Pop()
-				if jt.IsObjStart() {
+		switch t.(type) {
+		case json.Delim:
+			token := NewJsonToken(t)
+			switch {
+			case token.IsObjStart():
+				i.stack.Push(token)
+			case token.IsObjEnd():
+				tokenFromStack, ok = i.stack.Pop()
+				if !ok {
+					return nil, fmt.Errorf("expected { before }")
+				}
+				if tokenFromStack.IsObjStart() {
 					if i.stack.IsEmpty() {
-						continue
+						continue // EOF
 					}
-					jt = i.stack.Peek()
-					if jt.IsName() {
+					tokenFromStack = i.stack.Peek()
+					if tokenFromStack.IsName() {
 						i.stack.Pop()
 					}
+					i.deleteStateVars(jsonPath)
 				}
-			case "[":
-				// fmt.Println("+ARR_START")
+			case token.IsArrayStart():
 				if d, found := i.typeDecoders[jsonPath]; found {
 					if i.decoder.More() {
 						return d(i.decoder, i.stateVars)
 					}
 					i.decoder.Token() // ]
-					i.stack.Pop()     // Misconfig
+					i.stack.Pop()     // array name
 				} else {
-					i.stack.Push(NewJsonToken(jd))
+					i.stack.Push(token)
 				}
-			case "]":
-				i.stack.Pop()                 // [
-				nameOfArr, _ := i.stack.Pop() // name of array
-				nameOfArr.String()
-				// fmt.Printf("-ARR_END=%v\n", nameOfArr.String())
+			case token.IsArrayEnd():
+				i.stack.Pop() // [
+				i.stack.Pop() // array name
 				// Remove stateVars because we are moving out of scope
-				for key := range i.stateVars {
-					if strings.HasPrefix(key, jsonPath) {
-						// fmt.Println("removed", key)
-						delete(i.stateVars, key)
-					}
-				}
+				i.deleteStateVars(jsonPath)
 			}
 			continue
-		}
-
-		tokenFromStack := i.stack.Peek()
-		if tokenFromStack.IsName() {
-			// t is a json value
+		case string:
+			// t is name or val?
+			tokenFromStack = i.stack.Peek()
+			if tokenFromStack.IsName() {
+				// t is a json value
+				i.stack.Pop()
+				i.stateVars[jsonPath] = t
+			} else {
+				// t is a json name
+				token := NewJsonToken(t)
+				if d, found := i.typeDecoders["{}"+jsonPath+"."+token.String()]; found {
+					if i.decoder.More() {
+						return d(i.decoder, i.stateVars)
+					}
+				} else {
+					i.stack.Push(token)
+				}
+			}
+		default: // bool, floats, null and other json literals
 			i.stack.Pop()
 			i.stateVars[jsonPath] = t
-		} else {
-			tokenRead := NewJsonToken(t)
-			if tokenRead.IsName() {
-				i.stack.Push(tokenRead)
-			}
+		}
+
+	}
+}
+
+func (i *iterator) deleteStateVars(jsonPath string) {
+	for key := range i.stateVars {
+		if strings.HasPrefix(key, jsonPath) {
+			delete(i.stateVars, key)
 		}
 	}
 }
