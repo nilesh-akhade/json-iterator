@@ -9,32 +9,35 @@ import (
 	"strings"
 )
 
-func NewJsonRecordsIterator(filename string) JsonRecordsIterator {
-	return &jsonRecordsIterator{
-		filename:       filename,
-		goTypeDecoders: make(map[string]GoTypeJsonDecoder),
+func NewJsonRecordsIterator(filename string) Iterator {
+	return &iterator{
+		filename:     filename,
+		typeDecoders: make(map[string]TypeDecoder),
 	}
 }
 
-type jsonRecordsIterator struct {
+type iterator struct {
 	filename string
 	file     *os.File
 
 	stack   Stack
 	decoder *json.Decoder
 
-	stateVars      map[string]interface{}
-	goTypeDecoders map[string]GoTypeJsonDecoder
+	stateVars    map[string]interface{}
+	typeDecoders map[string]TypeDecoder
 
 	err      error
 	nextElem interface{}
 }
 
-func (i *jsonRecordsIterator) Err() error {
+func (i *iterator) Err() error {
+	if i.err == io.EOF {
+		return nil
+	}
 	return i.err
 }
 
-func (i *jsonRecordsIterator) HasNext() bool {
+func (i *iterator) HasNext() bool {
 	if i.file == nil {
 		err := i.start()
 		if err != nil {
@@ -47,7 +50,7 @@ func (i *jsonRecordsIterator) HasNext() bool {
 	return i.err == nil && i.nextElem != nil
 }
 
-func (i *jsonRecordsIterator) Next() interface{} {
+func (i *iterator) Next() interface{} {
 	var err error
 	if i.file == nil {
 		err = i.start()
@@ -87,7 +90,7 @@ func (i *jsonRecordsIterator) Next() interface{} {
 	return current
 }
 
-func (i *jsonRecordsIterator) start() error {
+func (i *iterator) start() error {
 	var err error
 	i.file, err = os.Open(i.filename)
 	if err != nil {
@@ -99,27 +102,26 @@ func (i *jsonRecordsIterator) start() error {
 	return nil
 }
 
-func (i *jsonRecordsIterator) RegisterGoTypeDecoder(jsonPath string, d GoTypeJsonDecoder) {
-	i.goTypeDecoders[jsonPath] = d
+func (i *iterator) RegisterTypeDecoder(jsonPath string, decoder TypeDecoder) {
+	i.typeDecoders[jsonPath] = decoder
 }
 
-func (i *jsonRecordsIterator) next() (interface{}, error) {
+func (i *iterator) next() (interface{}, error) {
 	var jt jsonToken
 	jsonPath := i.stack.String()
-	if d, found := i.goTypeDecoders[jsonPath]; found {
+	if d, found := i.typeDecoders[jsonPath]; found {
 		if i.decoder.More() {
 			return d(i.decoder, i.stateVars)
 		}
-		// fmt.Printf("-ARR_UNMARSHAL_END\n")
 		i.decoder.Token() // ]
-		i.stack.Pop()     // Misconfig
+		i.stack.Pop()
 	}
 
 	for {
 		jsonPath = i.stack.String()
 		t, err := i.decoder.Token()
 		if err == io.EOF {
-			return nil, nil
+			return nil, err
 		}
 		if err != nil {
 			return nil, err
@@ -128,29 +130,24 @@ func (i *jsonRecordsIterator) next() (interface{}, error) {
 			strJD := jd.String()
 			switch strJD {
 			case "{":
-				// fmt.Printf("+OBJ_START\n")
 				i.stack.Push(NewDelimJsonToken(jd))
 			case "}":
 				jt, _ = i.stack.Pop()
-				if jt.IsDelim() && jt.String() == "{" {
+				if jt.IsObjStart() {
 					if i.stack.IsEmpty() {
 						continue
 					}
 					jt = i.stack.Peek()
-					if jt.IsDelim() && jt.String() == "[" {
-						// fmt.Printf("-ARRAY_ELEM_OBJ_END\n")
-					} else if jt.IsName() {
-						// fmt.Printf("-OBJ_END=%v\n", jt.String())
+					if jt.IsName() {
 						i.stack.Pop()
 					}
 				}
 			case "[":
 				// fmt.Println("+ARR_START")
-				if d, found := i.goTypeDecoders[jsonPath]; found {
+				if d, found := i.typeDecoders[jsonPath]; found {
 					if i.decoder.More() {
 						return d(i.decoder, i.stateVars)
 					}
-					// fmt.Printf("-ARR_UNMARSHAL_END\n")
 					i.decoder.Token() // ]
 					i.stack.Pop()     // Misconfig
 				} else {
@@ -179,7 +176,7 @@ func (i *jsonRecordsIterator) next() (interface{}, error) {
 			i.stateVars[jsonPath] = t
 			jKey.String()
 			// fmt.Printf("%v=%v\n", jKey.String(), t)
-		} else if jt.IsDelim() && jt.String() == "[" {
+		} else if jt.IsArrayStart() {
 			// t is a array elem
 			// fmt.Println("-ARR_ELEM=", t)
 		} else {

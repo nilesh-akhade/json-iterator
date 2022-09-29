@@ -28,13 +28,13 @@ func (s *Stack) String() string {
 
 // Push a new value onto the stack
 func (s *Stack) Push(str jsonToken) {
-	*s = append(*s, str) // Simply append the new value to the end of the stack
+	*s = append(*s, str)
 }
 
 // Peek a value without pop
 func (s *Stack) Peek() jsonToken {
-	index := len(*s) - 1 // Get the index of the top most element.
-	return (*s)[index]   // Index into the slice and obtain the element.
+	index := len(*s) - 1
+	return (*s)[index]
 }
 
 // Remove and return top element of stack. Return false if stack is empty.
@@ -64,6 +64,22 @@ func (j *jsonToken) String() string {
 
 func (j *jsonToken) IsDelim() bool {
 	return j.isDelim
+}
+
+func (j *jsonToken) IsArrayStart() bool {
+	return j.IsDelim() && j.String() == "["
+}
+
+func (j *jsonToken) IsArrayEnd() bool {
+	return j.IsDelim() && j.String() == "]"
+}
+
+func (j *jsonToken) IsObjStart() bool {
+	return j.IsDelim() && j.String() == "{"
+}
+
+func (j *jsonToken) IsObjEnd() bool {
+	return j.IsDelim() && j.String() == "}"
 }
 
 func (j *jsonToken) IsName() bool {

@@ -9,7 +9,7 @@ import (
 
 func main() {
 	iterator := jsoniterator.NewJsonRecordsIterator("fruits.json")
-	iterator.RegisterGoTypeDecoder("{.trees.[.{.fruits", func(d *json.Decoder, m map[string]interface{}) (interface{}, error) {
+	iterator.RegisterTypeDecoder("{.trees.[.{.fruits", func(d *json.Decoder, m map[string]interface{}) (interface{}, error) {
 		var fruit Fruit
 		err := d.Decode(&fruit)
 		if val, found := m["{.trees.[.{.id"]; found {
