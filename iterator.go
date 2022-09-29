@@ -130,7 +130,7 @@ func (i *iterator) next() (interface{}, error) {
 			strJD := jd.String()
 			switch strJD {
 			case "{":
-				i.stack.Push(NewDelimJsonToken(jd))
+				i.stack.Push(NewJsonToken(jd))
 			case "}":
 				jt, _ = i.stack.Pop()
 				if jt.IsObjStart() {
@@ -151,7 +151,7 @@ func (i *iterator) next() (interface{}, error) {
 					i.decoder.Token() // ]
 					i.stack.Pop()     // Misconfig
 				} else {
-					i.stack.Push(NewDelimJsonToken(jd))
+					i.stack.Push(NewJsonToken(jd))
 				}
 			case "]":
 				i.stack.Pop()                 // [
@@ -169,20 +169,16 @@ func (i *iterator) next() (interface{}, error) {
 			continue
 		}
 
-		jt = i.stack.Peek()
-		if jt.IsName() {
+		tokenFromStack := i.stack.Peek()
+		if tokenFromStack.IsName() {
 			// t is a json value
-			jKey, _ := i.stack.Pop()
+			i.stack.Pop()
 			i.stateVars[jsonPath] = t
-			jKey.String()
-			// fmt.Printf("%v=%v\n", jKey.String(), t)
-		} else if jt.IsArrayStart() {
-			// t is a array elem
-			// fmt.Println("-ARR_ELEM=", t)
 		} else {
-			// t is a json name
-			i.stack.Push(NewNameJsonToken(t.(string)))
-			// fmt.Println("key:", t.(string))
+			tokenRead := NewJsonToken(t)
+			if tokenRead.IsName() {
+				i.stack.Push(tokenRead)
+			}
 		}
 	}
 }

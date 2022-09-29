@@ -50,51 +50,60 @@ func (s *Stack) Pop() (jsonToken, bool) {
 }
 
 type jsonToken struct {
-	isDelim bool
-	delim   json.Delim
-	name    string
+	json.Token
 }
 
+const (
+	objStart   = json.Delim('{')
+	objEnd     = json.Delim('}')
+	arrayStart = json.Delim('[')
+	arrayEnd   = json.Delim(']')
+)
+
 func (j *jsonToken) String() string {
-	if j.isDelim {
-		return j.delim.String()
+	switch j.Token.(type) {
+	case string:
+		return j.Token.(string)
+	case json.Delim:
+		return j.Token.(json.Delim).String()
 	}
-	return j.name
+	return ""
 }
 
 func (j *jsonToken) IsDelim() bool {
-	return j.isDelim
+	_, ok := j.Token.(json.Delim)
+	return ok
+}
+
+func (j *jsonToken) checkDelim(delim json.Delim) bool {
+	if v, ok := j.Token.(json.Delim); ok {
+		return v == delim
+	}
+	return false
 }
 
 func (j *jsonToken) IsArrayStart() bool {
-	return j.IsDelim() && j.String() == "["
+	return j.checkDelim(arrayStart)
 }
 
 func (j *jsonToken) IsArrayEnd() bool {
-	return j.IsDelim() && j.String() == "]"
+	return j.checkDelim(arrayEnd)
 }
 
 func (j *jsonToken) IsObjStart() bool {
-	return j.IsDelim() && j.String() == "{"
+	return j.checkDelim(objStart)
 }
 
 func (j *jsonToken) IsObjEnd() bool {
-	return j.IsDelim() && j.String() == "}"
+	return j.checkDelim(objEnd)
 }
 
 func (j *jsonToken) IsName() bool {
-	return !j.isDelim
+	_, ok := j.Token.(string)
+	return ok
 }
 
-func NewDelimJsonToken(delim json.Delim) jsonToken {
-	return jsonToken{
-		isDelim: true,
-		delim:   delim,
-	}
-}
-
-func NewNameJsonToken(name string) jsonToken {
-	return jsonToken{
-		name: name,
-	}
+func NewJsonToken(token json.Token) jsonToken {
+	// TODO: Do not allow numbers, null
+	return jsonToken{token}
 }
