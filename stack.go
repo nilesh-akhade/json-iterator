@@ -37,7 +37,7 @@ func (s *Stack) Peek() jsonToken {
 	return (*s)[index]
 }
 
-// Remove and return top element of stack. Return false if stack is empty.
+// Pop Removes and returns top element of the stack. Return false if stack is empty.
 func (s *Stack) Pop() (jsonToken, bool) {
 	if s.IsEmpty() {
 		return jsonToken{}, false
